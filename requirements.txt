@@ -1,0 +1,9 @@
+PyTelegramBotAPI
+PyAutoGUI
+tabulate
+plyer
+wikipedia
+requests
+pyscreenshot
+bs4
+beautifulsoup4
