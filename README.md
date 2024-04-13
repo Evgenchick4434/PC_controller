@@ -8,10 +8,6 @@
 ╰╯╱╱╰━━╯╰━━┻━━┻╯╰┻━┻╯╰━━┻━┻━┻━━┻╯**
 ㅤㅤ  ****by Evgenchick4434 & Georgyrs****
 
-![image](https://github.com/Evgenchick4434/PC_controller/assets/103461961/2a242379-13ab-43e4-95dd-415d35d08a64) ![image](https://github.com/Evgenchick4434/PC_controller/assets/103461961/367fa786-4155-40fd-95c6-7b9d02c618ba) ![image](https://github.com/Evgenchick4434/PC_controller/assets/103461961/b64cdad1-5509-4773-8f72-9a3e8ccdb1ce)
-
-
-
 
 _Привет! **PC Controller** поможет тебе управлять своим компьютером через Telegram бота - он имеет
 обширный функционал, который мы планируем только расширять))_
