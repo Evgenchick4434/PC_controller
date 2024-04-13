@@ -25,7 +25,7 @@ import pyautogui as pg
 import pyscreenshot
 import html
 import random
-from config import Console_log
+from config import Console_log, weather_link, temperature_link
 
 
 def get_date():
@@ -57,14 +57,14 @@ current_time = time.strftime("%H:%M", unformatted_time)
 wikipedia.set_lang('ru')
 
 def get_weather():
-    url = 'https://rp5.ru/%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0_%D0%B2_%D0%9A%D0%B0%D0%BB%D0%B8%D0%BD%D0%B8%D0%BD%D0%B3%D1%80%D0%B0%D0%B4%D0%B5'
+    url = temperature_link
     class_ = 'ArchiveTemp'
 
     r = requests.get(url)
     html = BS(r.text, 'html.parser')
     t = html.find(class_=class_).find(class_='t_0').text
 
-    url = 'https://meteo7.ru/forecast/35799'
+    url = weather_link
     class_ = 'descripcion wopr'     # Класс в котором нужный класс (чтобы не путались)
 
     r = requests.get(url)
@@ -73,7 +73,7 @@ def get_weather():
 
 
 
-    url = 'https://meteo7.ru/forecast/35799'
+    url = weather_link
     class_ = 'descripcion wopr'     # Класс в котором нужный класс (чтобы не путались)
 
     r = requests.get(url)
