@@ -23,8 +23,8 @@ import random
 import tabulate
 from info import logo
 from modules import (get_date, get_weather, get_courses, get_extra_currencies, shutdown, shutdown_stop, shutdown_timer,
-                     sleep_mode, screenshot_save, restart, current_time, console_command, alert_function, lock,
-                     SMS_message, get_news, get_wiki, get_date_sign)
+                     sleep_mode, screenshot_save, restart, get_current_time, console_command, alert_function, lock,
+                     SMS_message, get_news, get_wiki, get_date_sign, url_shortener, encrypt, decrypt, clear_cache)
 
 
 bot = telebot.TeleBot(config.TOKEN)
@@ -91,7 +91,7 @@ def privet(message):
 
 
 
-        bot.send_message(message.chat.id, f'🖐 Привет, Evgenchick!\n\n<b>✅ Бот готов к работе!</b>\n\n📅 Я календарь переверну и снова <b>{get_date()}</b>\n\n🕘 На часах <b>{current_time}</b>\n\n<i>{get_weather()}</i>\n\n<b>{get_courses()}</b>'.format(message.from_user, bot.get_me()), parse_mode='html', reply_markup=markup)
+        bot.send_message(message.chat.id, f'🖐 Привет, {message.from_user.first_name}!\n\n<b>✅ Бот готов к работе!</b>\n\n📅 Я календарь переверну и снова <b>{get_date()}</b>\n\n🕘 На часах <b>{get_current_time()}</b>\n\n<i>{get_weather()}</i>\n\n<b>{get_courses()}</b>'.format(message.from_user, bot.get_me()), parse_mode='html', reply_markup=markup)
         if get_date() != '1 Сентября' and get_date() != '2 Сентября' and get_date() != '3 Сентября':
             bot.delete_message(message.chat.id, hourglass_message.message_id)
 
@@ -128,7 +128,8 @@ def otvet(message):
                 item1 = types.InlineKeyboardButton("🧠 Википедия", callback_data='wikipedia')
                 item2 = types.InlineKeyboardButton("📈 Курсы валют", callback_data='extra_currency_courses')
                 item3 = types.InlineKeyboardButton("📰 Новости", callback_data='news')
-                markup.add(item1, item3, item2)
+                item4 = types.InlineKeyboardButton("🔗 Сократить URL", callback_data='url_shortener')
+                markup.add(item1, item3, item2, item4)
 
                 bot.send_message(message.chat.id, "👇 Выбери нужное:", reply_markup=markup)
 
@@ -149,7 +150,9 @@ def otvet(message):
                 item1 = types.InlineKeyboardButton("📤 Отправить", callback_data='file_transfer')
                 item2 = types.InlineKeyboardButton("📁 Проводник", callback_data='explorer')
 #                item3 = types.InlineKeyboardButton("⚙️ Процессы", callback_data='process_list')
-                markup.add(item1, item2)
+                item4 = types.InlineKeyboardButton("🔒 Зашифровать файл", callback_data='encrypt')
+                item5 = types.InlineKeyboardButton("🔑 Дешифровать файл", callback_data='decrypt')
+                markup.add(item1, item2, item4, item5)
 
                 bot.send_message(message.chat.id, '👇 Выбирай нужное:', reply_markup=markup)
 
@@ -157,7 +160,10 @@ def otvet(message):
                 bot.send_message(message.chat.id, "🐍 <u><i>Разработчики</i></u>:\n\n<b><a href='https://github.com/Evgenchick4434'>Evgenchick4434</a></b><i> - Разработчик, дизайнер.</i>\n<b><a href='https://github.com/Georgyrs'>Georgy</a></b><i> - Разработчик, браток короче)</i>\n\n<b>🪲 Нашли баг? <a href='https://forms.gle/AofqpZNgES5f5RBp7'>Сообщите мне</a></b>\n<b>❤️ Лучшим подарком для меня будет тг прем: @Evgenchick4434</b>".format(message.from_user, bot.get_me()), parse_mode='html')
 
             elif message.text == '/help':
-                bot.send_message(message.chat.id, "<b>🛟 Помощь</b>\n\n👉 /start <i>- Если пропали кнопки</i>\n👉 /about <i>- Узнать больше о боте и его создателях</i>\n\n🪲<a href='https://forms.gle/AofqpZNgES5f5RBp7'><b>Сообщить о баге</b></a>".format(message.from_user, bot.get_me()), parse_mode='html')
+                bot.send_message(message.chat.id, "<b>🛟 Помощь</b>\n\n👉 /start <i>- Если пропали кнопки</i>\n👉 /clear_cache <i>- Очистить содержимое папки с временными файлами бота</i>\n👉 /about <i>- Узнать больше о боте и его создателях</i>\n\n🪲<a href='https://forms.gle/AofqpZNgES5f5RBp7'><b>Сообщить о баге</b></a>".format(message.from_user, bot.get_me()), parse_mode='html')
+
+            elif message.text == '/clear_cache':
+                bot.send_message(message.chat.id, clear_cache())
 
             else:
                 pass
@@ -194,7 +200,7 @@ def callback_inline(call):
             elif call.data == 'screenshot':
                 screenshot_save()
                 time.sleep(0.1)
-                screenshot = open('screenshots/screenshot.png', 'rb')
+                screenshot = open(f'user_files/screenshot.png', 'rb')
                 bot.send_photo(call.message.chat.id, screenshot)
 
             elif call.data == 'shutdown_timer':
@@ -258,6 +264,21 @@ def callback_inline(call):
                 bot.send_message(call.message.chat.id, "👉 Введите путь к директории:")
                 bot.register_next_step_handler(call.message, process_explorer_input)
 
+            elif call.data == 'url_shortener':
+                bot.send_message(call.message.chat.id, '👇 Отправьте ссылку, которую нужно сократить:')
+                bot.register_next_step_handler(call.message, process_short_url_step)
+
+            elif call.data == 'encrypt':
+                bot.send_message(call.message.chat.id, '👇<b> Отправьте ДОКУМЕНТ для шифрования </b><i>(другие типы файлов'
+                                                       ' кроме текстовых не поддерживаются и могут не быть расшифрованы'
+                                                       ')</i>:', parse_mode='html')
+                bot.register_next_step_handler(call.message, process_encrypt_step)
+
+            elif call.data == 'decrypt':
+                bot.send_message(call.message.chat.id, '👇<b> Отправьте ДОКУМЕНТ для расшифровки</b> <i>(другие типы файлов'
+                                                       ' кроме текстовых не поддерживаются и могут не быть расшифрованы'
+                                                       '):</i>\n\n<b>P.S. Так же важно, что расшифровываются только файлы, зашифрованные в этом боте</b>', parse_mode='html')
+                bot.register_next_step_handler(call.message, process_decrypt_step)
 
 
 
@@ -331,6 +352,108 @@ def process_explorer_input(message):
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ Произошла ошибка: {e}")
 
+def process_short_url_step(message):
+    try:
+        url = message.text
+        short_url = url_shortener(url)
+
+        bot.send_message(message.chat.id, f'<b>👉 Ваша сокращённая ссылка:\n</b> <code>{short_url}</code>', parse_mode='html')
+
+    except Exception as e:
+        bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
+
+def process_encrypt_step(message):
+    try:
+        file_to_encrypt = message.document
+        filename = file_to_encrypt.file_name
+        file_id = file_to_encrypt.file_id
+        file_path = f'user_files/{filename}'
+
+        file_info = bot.get_file(file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        hourglass_message = bot.send_message(message.chat.id, "⏳")
+
+        time.sleep(10)
+        with open(file_path, 'wb') as new_file:
+            new_file.write(downloaded_file)
+
+        bot.send_message(message.chat.id, '🔐 Введите пароль для шифрования файла:')
+        bot.delete_message(message.chat.id, hourglass_message.message_id)
+
+
+        bot.register_next_step_handler(message, lambda msg: process_encrypt_step2(msg, file_path, filename))
+    except Exception as e:
+        if e == r"'NoneType' object has no attribute 'file_name'":
+            bot.send_message(message.chat.id, f'❌ Это не документ.')
+        else:
+            bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
+
+def process_encrypt_step2(message, file_path, filename, password=None):
+    try:
+        if password is None:
+            password = message.text
+
+        encrypt(filename, password)
+
+        hourglass_message = bot.send_message(message.chat.id, "⌨️")
+
+        time.sleep(10)
+
+        encrypted_file_to_send = open(f'user_files/encrypted_{filename}.aes', 'rb')
+        bot.send_document(message.chat.id, encrypted_file_to_send)
+
+        bot.delete_message(message.chat.id, hourglass_message.message_id)
+
+
+    except Exception as e:
+        bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
+def process_decrypt_step(message):
+    try:
+        file_to_decrypt = message.document
+        filename = file_to_decrypt.file_name
+        file_id = file_to_decrypt.file_id
+        file_path = f'user_files/{filename}'
+
+        file_info = bot.get_file(file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        hourglass_message = bot.send_message(message.chat.id, "⏳")
+        time.sleep(10)
+        with open(file_path, 'wb') as new_file:
+            new_file.write(downloaded_file)
+
+        bot.send_message(message.chat.id, '🔓 Введите пароль для расшифровки файла:')
+        bot.delete_message(message.chat.id, hourglass_message.message_id)
+
+        bot.register_next_step_handler(message, lambda msg: process_decrypt_step2(msg, file_path, filename))
+    except Exception as e:
+        if e == r"'NoneType' object has no attribute 'file_name'":
+            bot.send_message(message.chat.id, f'❌ Это не документ.')
+        else:
+            bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
+
+def process_decrypt_step2(message, file_path, filename, password=None):
+    try:
+        if password is None:
+            password = message.text
+
+        decrypt(filename, password)
+        hourglass_message = bot.send_message(message.chat.id, "⌨️")
+        time.sleep(10)
+
+        decrypted_file_to_send = open(f'user_files/decrypted_{filename[:-4][10:]}')
+
+        bot.send_document(message.chat.id, decrypted_file_to_send)
+        bot.delete_message(message.chat.id, hourglass_message.message_id)
+    except Exception as e:
+        if e == r"[Errno 2] No such file or directory: 'user_files/decrypted_'":
+            bot.send_message(message.chat.id, '❌ Скорее всего, твой файл повреждён или был зашифрован не в этом боте')
+        else:
+            bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
 
 
 

@@ -25,6 +25,8 @@ import pyautogui as pg
 import pyscreenshot
 import html
 import random
+import pyAesCrypt
+import shutil
 from config import Console_log, weather_link, temperature_link
 
 
@@ -52,7 +54,13 @@ def get_date():
 
 unformatted_time = time.localtime()
 
-current_time = time.strftime("%H:%M", unformatted_time)
+def get_current_time():
+    current_time = time.strftime("%H:%M", unformatted_time)
+
+    if Console_log == True:
+        print(f'Получено время: {current_time}')
+
+    return current_time
 
 wikipedia.set_lang('ru')
 
@@ -115,20 +123,20 @@ def get_weather():
 
 
 def get_courses():
-    url = 'https://www.binance.com/en-GB/price/bitcoin'
-    class_ = 'css-1267ixm'
+    url = 'https://coinmarketcap.com/currencies/bitcoin/'
+    class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
     r = requests.get(url)
     html = BS(r.text, 'html.parser')
-    BTC = html.find(class_=class_).find(class_='css-1bwgsh3').text
+    BTC = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
 
-    url = 'https://www.binance.com/en-GB/price/ethereum'
-    class_ = 'css-1267ixm'
+    url = 'https://coinmarketcap.com/currencies/ethereum/'
+    class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
     r = requests.get(url)
     html = BS(r.text, 'html.parser')
-    ETH = html.find(class_=class_).find(class_='css-1bwgsh3').text
+    ETH = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
 
     url = 'https://ru.investing.com/currencies/usd-rub'
@@ -146,19 +154,19 @@ def get_courses():
     return currency_courses
 
 def get_extra_currencies():
-    url = 'https://www.binance.com/en-GB/price/bitcoin'
-    class_ = 'css-1267ixm'
+    url = 'https://coinmarketcap.com/currencies/bitcoin/'
+    class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
     r = requests.get(url)
     html = BS(r.text, 'html.parser')
-    BTC_element = html.find(class_=class_)
-    BTC = BTC_element.find(class_='css-1bwgsh3').text if BTC_element else "Не удалось найти курс Bitcoin"
+    BTC = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
-    url = 'https://www.binance.com/en-GB/price/ethereum'
+    url = 'https://coinmarketcap.com/currencies/ethereum/'
+    class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
+
     r = requests.get(url)
     html = BS(r.text, 'html.parser')
-    ETH_element = html.find(class_=class_)
-    ETH = ETH_element.find(class_='css-1bwgsh3').text if ETH_element else "Не удалось найти курс Ethereum"
+    ETH = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
     url = 'https://ru.investing.com/currencies/usd-rub'
     class_ = 'mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:mb-0.5 md:gap-6'
@@ -183,21 +191,19 @@ def get_extra_currencies():
     EUR = EUR_element.find(
         class_='text-5xl/9 font-bold text-[#232526] md:text-[42px] md:leading-[60px]').text if EUR_element else "Не удалось найти курс Евро"
 
-    # Парсинг курса TRX
-    url_trx = 'https://www.binance.com/en/price/tron'
-    class_trx = 'css-1267ixm'
+    url_trx = 'https://coinmarketcap.com/currencies/tron/'
+    class_trx = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
     r_trx = requests.get(url_trx)
     html_trx = BS(r_trx.text, 'html.parser')
     trx_element = html_trx.find(class_=class_trx)
-    TRX = trx_element.find(class_='css-1bwgsh3').text if trx_element else "Не удалось найти курс TRX"
+    TRX = trx_element.find(class_='sc-f70bb44c-0 jxpCgO base-text').text if trx_element else "Не удалось найти курс TRX"
 
-    # Парсинг курса TON
-    url_ton = 'https://www.binance.com/en-GB/price/toncoin'
-    class_ton = 'css-1267ixm'
+    url_ton = 'https://coinmarketcap.com/currencies/toncoin/'
+    class_ton = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
     r_ton = requests.get(url_ton)
     html_ton = BS(r_ton.text, 'html.parser')
     ton_element = html_ton.find(class_=class_ton)
-    TON = ton_element.find(class_='css-1bwgsh3').text if ton_element else "Не удалось найти курс TON"
+    TON = ton_element.find(class_='sc-f70bb44c-0 jxpCgO base-text').text if ton_element else "Не удалось найти курс TON"
 
     url = 'https://ru.investing.com/currencies/pln-rub'
     r = requests.get(url)
@@ -264,7 +270,7 @@ def lock():
 
 def screenshot_save():
     scr = pyscreenshot.grab()
-    scr.save('screenshots/screenshot.png')
+    scr.save(f'user_files/screenshot.png')
     if Console_log == True:
         print("Скриншот сохранён")
 
@@ -359,3 +365,62 @@ def get_date_sign():
     if Console_log == True:
         print(f'Получен date_sign: {date_sign}')
     return date_sign
+
+def url_shortener(url):
+    endpoint = 'https://clck.ru/--'
+    gotted_url = (url, '?utm_source=sender')
+    response = requests.get(
+        endpoint,
+        params={'url': gotted_url}
+    )
+    if Console_log == True:
+        print(f'Ссылка {url} сокращена до {response.text}')
+    return response.text
+
+def encrypt(filename, password):
+    try:
+        input_file_path = f'user_files/{filename}'
+        encrypted_file_path = f'user_files/encrypted_{filename}.aes'
+        pyAesCrypt.encryptFile(input_file_path, encrypted_file_path, password)
+        if Console_log == True:
+            print(f'Зашифрован {filename}')
+    except Exception as e:
+        if Console_log == True:
+            print(f'Произошла ошибка {e}')
+
+        else:
+            pass
+
+
+def decrypt(filename, password):
+    try:
+        encrypted_file_path = f'user_files/{filename}'
+        decrypted_file_path = f'user_files/decrypted_{filename[:-4][10:]}'
+        pyAesCrypt.decryptFile(encrypted_file_path, decrypted_file_path, password)
+        if Console_log == True:
+            print(f'Расшифрован {filename}')
+    except Exception as e:
+        if Console_log == True:
+            print(f'Произошла ошибка расшифровки файла: {e}')
+        else:
+            pass
+
+def clear_cache():
+    folder_path = "user_files"
+    if Console_log == True:
+        result = '❌ Ошибка при очистке кэша'
+    try:
+        folder_abs_path = os.path.abspath(folder_path)
+        shutil.rmtree(folder_abs_path)
+        result = "✅ Успешно очистил кэш."
+        os.mkdir('user_files')
+        if Console_log == True:
+            print('Очищен кэш')
+    except Exception as e:
+        if Console_log == True:
+            result = f"❌ Ошибка при очистке кэша: {e}"
+
+        else:
+            pass
+
+    return result
