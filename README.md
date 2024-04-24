@@ -1,5 +1,5 @@
 # 🐍 PC Controller - Управляй своим ПК дистанционно!
-![image](https://github.com/Evgenchick4434/PC_controller/assets/103461961/3571d79c-6040-4a99-b658-f1f4c14c8716) ![image]([https://github.com/Evgenchick4434/PC_controller/assets/103461961/d513ffad-a19a-4775-9899-e2d2222bf304](https://img.shields.io/badge/python-3.7_|_3.8_|_3.9_|_3.10_|_3.11_|_3.12-blue))
+![image](https://github.com/Evgenchick4434/PC_controller/assets/103461961/3571d79c-6040-4a99-b658-f1f4c14c8716) ![image](https://img.shields.io/badge/python-3.7_|_3.8_|_3.9_|_3.10_|_3.11_|_3.12-blue))
 
 
 
