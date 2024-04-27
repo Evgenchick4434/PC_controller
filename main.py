@@ -165,6 +165,34 @@ def otvet(message):
             elif message.text == '/clear_cache':
                 bot.send_message(message.chat.id, clear_cache())
 
+            elif '/key' in message.text:
+
+                def process_key_command(command):
+
+                    if command.startswith('/key '):
+                        ready_command = command[5:]
+                        pg.press(ready_command)
+                        bot.send_message(message.chat.id, f'✅ Нажал на кнопку <b>{ready_command}</b>',
+                                         parse_mode='html')
+
+                    elif command == '/key':
+                        bot.send_message(message.chat.id, '👇 Введите <b>кнопку</b>, на которую хотите нажать:',
+                                         parse_mode='html')
+                        bot.register_next_step_handler(message, process_key_step)
+
+                    else:
+                        bot.send_message(message.chat.id, '<b>❌ Неверное употребление команды!</b>\n\n<i>Чтобы'
+                                                          ' нажать на кнопку, выберите один из вариантов:</i>\n\n'
+                                                          '<code>/key КНОПКА</code><i><b> - Замените КНОПКА на кнопку,'
+                                                          ' на'
+                                                          ' которую нужно нажать.</b></i>\n<code>/key</code><i><b>'
+                                                          ' - Запросит'
+                                                          ' ввод кнопки в отдельном сообщении</b></i>\n\n<b>'
+                                                          '🛟 Нужна помощь?'
+                                                          '</b> /help', parse_mode='html')
+
+                process_key_command(message.text)
+
             else:
                 pass
     else:
@@ -176,7 +204,6 @@ def callback_inline(call):
         if call.message:
             if call.data == 'shutdown':
                 shutdown()
-                bot.send_message(call.message.chat.id, "✅")
                 bot.send_message(call.message.chat.id, "✅ Выключаю ПК...")
 
             elif call.data == 'restart':
@@ -195,11 +222,11 @@ def callback_inline(call):
 
             elif call.data == 'shutdown_stop':
                 shutdown_stop()
-                bot.send_message(call.message.chat.id, "❌ Успешно отменил выключение ПК")
+                bot.send_message(call.message.chat.id, "❎ Успешно отменил выключение ПК")
 
             elif call.data == 'screenshot':
                 screenshot_save()
-                time.sleep(0.1)
+                time.sleep(0.5)
                 screenshot = open(f'user_files/screenshot.png', 'rb')
                 bot.send_photo(call.message.chat.id, screenshot)
 
@@ -269,13 +296,13 @@ def callback_inline(call):
                 bot.register_next_step_handler(call.message, process_short_url_step)
 
             elif call.data == 'encrypt':
-                bot.send_message(call.message.chat.id, '👇<b> Отправьте ДОКУМЕНТ для шифрования </b><i>(другие типы файлов'
+                bot.send_message(call.message.chat.id, '👇<b> Отправь ДОКУМЕНТ для шифрования </b><i>(другие типы файлов'
                                                        ' кроме текстовых не поддерживаются и могут не быть расшифрованы'
                                                        ')</i>:', parse_mode='html')
                 bot.register_next_step_handler(call.message, process_encrypt_step)
 
             elif call.data == 'decrypt':
-                bot.send_message(call.message.chat.id, '👇<b> Отправьте ДОКУМЕНТ для расшифровки</b> <i>(другие типы файлов'
+                bot.send_message(call.message.chat.id, '👇<b> Отправь ДОКУМЕНТ для расшифровки</b> <i>(другие типы файлов'
                                                        ' кроме текстовых не поддерживаются и могут не быть расшифрованы'
                                                        '):</i>\n\n<b>P.S. Так же важно, что расшифровываются только файлы, зашифрованные в этом боте</b>', parse_mode='html')
                 bot.register_next_step_handler(call.message, process_decrypt_step)
@@ -291,8 +318,8 @@ def process_timer_step(message):
         timer_time = int(message.text)
         shutdown_timer(timer_time)
         bot.send_message(message.chat.id, f'⏰ Таймер выключения установлен на {timer_time} секунд.')
-    except ValueError:
-        bot.send_message(message.chat.id, '⚠️ Введи корректное число секунд!')
+    except Exception as e:
+        bot.send_message(message.chat.id, f'<b>⚠️ Произошла ошибка:</b> {e}', parse_mode='html')
 
 def process_alert_step(message):
     alert_text = message.text
@@ -455,6 +482,14 @@ def process_decrypt_step2(message, file_path, filename, password=None):
         else:
             bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
 
+def process_key_step(message):
+    try:
+        key = message.text
+
+        pg.press(key)
+        bot.send_message(message.chat.id, f'✅ Нажал на кнопку <b>{key}</b>', parse_mode='html')
+    except Exception as e:
+        bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
 
 
 bot.polling(none_stop=True)
