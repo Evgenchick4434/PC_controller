@@ -153,6 +153,48 @@ def get_courses():
         print(f'Получены курсы валют: {currency_courses}')
     return currency_courses
 
+def get_currency_stats():
+    url = 'https://ru.investing.com/currencies/usd-rub'
+    class_ = 'mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:mb-0.5 md:gap-6'
+
+    r = requests.get(url)
+    html = BS(r.text, 'html.parser')
+    CURRENCIES = html.find(class_=class_).find(
+        class_='flex items-center gap-2 text-base/6 font-bold md:text-xl/7 rtl:force-ltr text-negative-main').text
+
+    if '-' in CURRENCIES:
+        open_bracket_index = CURRENCIES.find('(')
+        close_bracket_index = CURRENCIES.find(')')
+
+        in_brackets = CURRENCIES[open_bracket_index + 1:close_bracket_index]
+        currencies_review = f'📉 | На нынешний день рынок <i>фиатных валют</i> <b>упал</b> на {in_brackets[1:]}'
+    else:
+        open_bracket_index = CURRENCIES.find('(')
+        close_bracket_index = CURRENCIES.find(')')
+
+        in_brackets = CURRENCIES[open_bracket_index + 1:close_bracket_index]
+        currencies_review = f'📈 | На нынешний день рынок <i>фиатных валют</i> <b>вырос</b> на {in_brackets}'
+
+    return currencies_review
+
+def get_crypto_stats():
+    url = 'https://www.binance.com/ru/price/ethereum'
+    class_ = 'css-1267ixm'
+
+    r = requests.get(url)
+    html = BS(r.text, 'html.parser')
+    CRYPTO = html.find(class_=class_).find(class_='css-4j2do9').text
+
+    if '-' in CRYPTO:
+
+        crypto_review = f'📉 | На нынешний день рынок <i>криптовалют</i> <b>упал</b> на {CRYPTO[1:]}'
+    else:
+
+        crypto_review = f'📈 | На нынешний день рынок <i>криптовалют</i> <b>вырос<b> на {CRYPTO}'
+
+    return crypto_review
+
+
 def get_extra_currencies():
     url = 'https://coinmarketcap.com/currencies/bitcoin/'
     class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
@@ -212,7 +254,9 @@ def get_extra_currencies():
     PLN = PLN_element.find(
         class_='text-5xl/9 font-bold text-[#232526] md:text-[42px] md:leading-[60px]').text if PLN_element else "Не удалось найти курс Злотого"
 
-    extra_currency_courses = f'<b>✅ Актуальные курсы валют прямо сейчас:</b>\n\n<b>[₿]</b> Bitcoin: {BTC}\n[💎] Ethereum: {ETH}\n[💲] Доллар: ₽ {USD}\n[💶] Евро: ₽ {EUR}\n<b>[₺]</b> Лира: ₽ {TRY}\n[🔻] TON: {TON}\n[👑] TRX: {TRX}\n<b>[zł]</b> Злотый: ₽ {PLN}'
+
+
+    extra_currency_courses = f'<b>✅ Актуальные курсы валют прямо сейчас:</b>\n\n<b>[₿]</b> Bitcoin: {BTC}\n[💎] Ethereum: {ETH}\n[💲] Доллар: ₽ {USD}\n[💶] Евро: ₽ {EUR}\n<b>[₺]</b> Лира: ₽ {TRY}\n[🔻] TON: {TON}\n[👑] TRX: {TRX}\n<b>[zł]</b> Злотый: ₽ {PLN}\n\n{get_currency_stats()}\n{get_crypto_stats()}'
 
     if Console_log == True:
         print(f'Получены расширенные курсы валют: {extra_currency_courses}')
