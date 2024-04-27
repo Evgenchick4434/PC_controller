@@ -8,3 +8,4 @@
     transfer_folder = r"C:\Users\User\Documents"  # Путь для сохранения файлов (трансфер)
 
     Console_log = False  # Включить лог в консоли
+    Changelist = False # Список изменений при каждом запуске в консоли
