@@ -7,3 +7,5 @@ requests
 pyscreenshot
 bs4
 beautifulsoup4
+Pillow
+pyAesCrypt
