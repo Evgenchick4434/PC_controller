@@ -24,7 +24,8 @@ import tabulate
 from info import logo
 from modules import (get_date, get_weather, get_courses, get_extra_currencies, shutdown, shutdown_stop, shutdown_timer,
                      sleep_mode, screenshot_save, restart, get_current_time, console_command, alert_function, lock,
-                     SMS_message, get_news, get_wiki, get_date_sign, url_shortener, encrypt, decrypt, clear_cache)
+                     SMS_message, get_news, get_wiki, get_date_sign, url_shortener, encrypt, decrypt, clear_cache,
+                     generate_shtrih_code)
 
 
 bot = telebot.TeleBot(config.TOKEN)
@@ -160,7 +161,7 @@ def otvet(message):
                 bot.send_message(message.chat.id, "🐍 <u><i>Разработчики</i></u>:\n\n<b><a href='https://github.com/Evgenchick4434'>Evgenchick4434</a></b><i> - Разработчик, дизайнер.</i>\n<b><a href='https://github.com/Georgyrs'>Georgy</a></b><i> - Разработчик, браток короче)</i>\n\n<b>🪲 Нашли баг? <a href='https://forms.gle/AofqpZNgES5f5RBp7'>Сообщите мне</a></b>\n<b>❤️ Лучшим подарком для меня будет тг прем: @Evgenchick4434</b>".format(message.from_user, bot.get_me()), parse_mode='html')
 
             elif message.text == '/help':
-                bot.send_message(message.chat.id, "<b>🛟 Помощь</b>\n\n👉 /start <i>- Если пропали кнопки</i>\n👉 /clear_cache <i>- Очистить содержимое папки с временными файлами бота</i>\n👉 /about <i>- Узнать больше о боте и его создателях</i>\n\n🪲<a href='https://forms.gle/AofqpZNgES5f5RBp7'><b>Сообщить о баге</b></a>".format(message.from_user, bot.get_me()), parse_mode='html')
+                bot.send_message(message.chat.id, "<b>🛟 Помощь</b>\n\n👉 /start <i>- Если пропали кнопки</i>\n👉 /clear_cache <i>- Очистить содержимое папки с временными файлами бота</i>\n👉 /about <i>- Узнать больше о боте и его создателях</i>\n👉 /generate_code <i>- Сгенерировать QR или штрих код</i>\n\n🪲<a href='https://forms.gle/AofqpZNgES5f5RBp7'><b>Сообщить о баге</b></a>".format(message.from_user, bot.get_me()), parse_mode='html')
 
             elif message.text == '/clear_cache':
                 bot.send_message(message.chat.id, clear_cache())
@@ -192,6 +193,16 @@ def otvet(message):
                                                           '</b> /help', parse_mode='html')
 
                 process_key_command(message.text)
+
+            elif message.text == '/generate_code':
+                markup = types.InlineKeyboardMarkup(row_width=1)
+
+                item1 = types.InlineKeyboardButton("[🔲] QR код", callback_data='gen_qr')
+                item2 = types.InlineKeyboardButton("[ǁ|║I] Штрих код", callback_data='gen_shtrih')
+                markup.add(item1,item2)
+
+                bot.send_message(message.chat.id, '<b>👇 Выбери тип кода:</b>',
+                                 parse_mode='html', reply_markup=markup)
 
             else:
                 pass
@@ -306,6 +317,10 @@ def callback_inline(call):
                                                        ' кроме текстовых не поддерживаются и могут не быть расшифрованы'
                                                        '):</i>\n\n<b>P.S. Так же важно, что расшифровываются только файлы, зашифрованные в этом боте</b>', parse_mode='html')
                 bot.register_next_step_handler(call.message, process_decrypt_step)
+
+            elif call.data == 'gen_shtrih':
+                bot.send_message(call.message.chat.id, '👇 Отправь цифры, из которых надо сделать штрих код:')
+                bot.register_next_step_handler(call.message, process_shtrih_step)
 
 
 
@@ -490,6 +505,35 @@ def process_key_step(message):
         bot.send_message(message.chat.id, f'✅ Нажал на кнопку <b>{key}</b>', parse_mode='html')
     except Exception as e:
         bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
+def process_shtrih_step(message):
+    def is_valid_ean13(code):
+        if len(code) != 13 or not code.isdigit():
+            return False
+        factors = [1, 3] * 6
+        total = sum(int(digit) * factor for digit, factor in zip(code[:12], factors))
+        checksum = (10 - (total % 10)) % 10
+        return checksum == int(code[-1])
+
+    def process_message(message):  # Здесь добавляем аргумент message
+        if hasattr(message, 'text') and message.text and any(char.isdigit() for char in message.text):
+            code = ''.join(char for char in message.text if char.isdigit())
+            if is_valid_ean13(code):
+                generate_shtrih_code(code)
+                time.sleep(1)
+                barcode_image = open('user_files/barcode.png', 'rb')
+                bot.send_photo(message.chat.id, barcode_image, caption=f'Ваше <b>штрих код</b> с цифрами <code>{message.text}</code>', parse_mode='html')
+                time.sleep(1)
+                barcode_image.close()
+            else:
+                bot.send_message(message.chat.id, f'❌ Ваш набор цифр <i>не соответствует</i> <b>формату EAN-13</b>\n\n👉 Нужно ввести <b>13</b> цифр!',
+                                 parse_mode='html')
+        else:
+            bot.send_message(message.chat.id, '❌ <b>Неверный формат сообщения или отсутствует текст.</b>',
+                             parse_mode='html')
+
+    process_message(message)
+
 
 
 bot.polling(none_stop=True)

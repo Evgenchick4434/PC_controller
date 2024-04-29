@@ -9,3 +9,4 @@ bs4
 beautifulsoup4
 Pillow
 pyAesCrypt
+"python-barcode[images]"

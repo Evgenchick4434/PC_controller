@@ -27,6 +27,8 @@ import html
 import random
 import pyAesCrypt
 import shutil
+import barcode
+from  barcode.writer import ImageWriter
 from config import Console_log, weather_link, temperature_link
 
 
@@ -468,3 +470,19 @@ def clear_cache():
             pass
 
     return result
+
+def generate_shtrih_code(numbers):
+    try:
+        ean = barcode.get('ean13', f'{numbers}', writer=ImageWriter())
+        filename = ean.save('user_files/barcode')
+
+        if Console_log == True:
+            print("Успешно сгенерировал штрих код")
+
+        return 'ok'
+    except:
+        if Console_log == True:
+            print("Ошибка генерации штрих кода")
+
+        return 'except'
+
