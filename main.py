@@ -25,7 +25,7 @@ from info import logo
 from modules import (get_date, get_weather, get_courses, get_extra_currencies, shutdown, shutdown_stop, shutdown_timer,
                      sleep_mode, screenshot_save, restart, get_current_time, console_command, alert_function, lock,
                      SMS_message, get_news, get_wiki, get_date_sign, url_shortener, encrypt, decrypt, clear_cache,
-                     generate_shtrih_code)
+                     generate_shtrih_code, generate_qr_code)
 
 
 bot = telebot.TeleBot(config.TOKEN)
@@ -37,6 +37,7 @@ item4 = types.KeyboardButton("📂 Файлы")
 markup.add(item4, item2, item3, item1)
 
 print(logo)
+
 
 @bot.message_handler(commands=['start'])
 def privet(message):
@@ -88,9 +89,6 @@ def privet(message):
                 shufut = open('static/perevernul.jpg', 'rb')
 
             shufut_message = bot.send_photo(message.chat.id, shufut)
-
-
-
 
         bot.send_message(message.chat.id, f'🖐 Привет, {message.from_user.first_name}!\n\n<b>✅ Бот готов к работе!</b>\n\n📅 Я календарь переверну и снова <b>{get_date()}</b>\n\n🕘 На часах <b>{get_current_time()}</b>\n\n<i>{get_weather()}</i>\n\n<b>{get_courses()}</b>'.format(message.from_user, bot.get_me()), parse_mode='html', reply_markup=markup)
         if get_date() != '1 Сентября' and get_date() != '2 Сентября' and get_date() != '3 Сентября':
@@ -209,6 +207,7 @@ def otvet(message):
     else:
         bot.send_message(message.chat.id, "❌ Вас нету в белом списке этого бота, он не для вас...")
 
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     try:
@@ -322,7 +321,9 @@ def callback_inline(call):
                 bot.send_message(call.message.chat.id, '👇 Отправь цифры, из которых надо сделать штрих код:')
                 bot.register_next_step_handler(call.message, process_shtrih_step)
 
-
+            elif call.data == 'gen_qr':
+                bot.send_message(call.message.chat.id, '👇 Отправь информацию, которую нужно зашифровать в QR:')
+                bot.register_next_step_handler(call.message, process_qr_step)
 
     except Exception as e:
         print(repr(e))
@@ -336,15 +337,18 @@ def process_timer_step(message):
     except Exception as e:
         bot.send_message(message.chat.id, f'<b>⚠️ Произошла ошибка:</b> {e}', parse_mode='html')
 
+
 def process_alert_step(message):
     alert_text = message.text
     alert_function(alert_text)
     bot.send_message(message.chat.id, f'💬 Отправлено уведомление с текстом: {alert_text}')
 
+
 def process_msg_step(message):
     msg_text = message.text
     SMS_message(msg_text)
     bot.send_message(message.chat.id, f'💬 Отправлено сообщение с текстом: {msg_text}')
+
 
 def process_cmd_step(message):
     try:
@@ -353,6 +357,7 @@ def process_cmd_step(message):
         bot.send_message(message.chat.id, f'✅ Успешно выполнена команда: {cmd_command}')
     except:
         bot.send_message(message.chat.id, f'⚠️ При выполнении команды произошла ошибка. Вероятно, команда неверная')
+
 
 def process_wikipedia_step(message):
 
@@ -424,7 +429,6 @@ def process_encrypt_step(message):
         bot.send_message(message.chat.id, '🔐 Введите пароль для шифрования файла:')
         bot.delete_message(message.chat.id, hourglass_message.message_id)
 
-
         bot.register_next_step_handler(message, lambda msg: process_encrypt_step2(msg, file_path, filename))
     except Exception as e:
         if e == r"'NoneType' object has no attribute 'file_name'":
@@ -449,9 +453,9 @@ def process_encrypt_step2(message, file_path, filename, password=None):
 
         bot.delete_message(message.chat.id, hourglass_message.message_id)
 
-
     except Exception as e:
         bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
 
 def process_decrypt_step(message):
     try:
@@ -497,6 +501,7 @@ def process_decrypt_step2(message, file_path, filename, password=None):
         else:
             bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
 
+
 def process_key_step(message):
     try:
         key = message.text
@@ -505,6 +510,7 @@ def process_key_step(message):
         bot.send_message(message.chat.id, f'✅ Нажал на кнопку <b>{key}</b>', parse_mode='html')
     except Exception as e:
         bot.send_message(message.chat.id, f'❌ Произошла ошибка: {e}')
+
 
 def process_shtrih_step(message):
     def is_valid_ean13(code):
@@ -515,18 +521,20 @@ def process_shtrih_step(message):
         checksum = (10 - (total % 10)) % 10
         return checksum == int(code[-1])
 
-    def process_message(message):  # Здесь добавляем аргумент message
+    def process_message(message):
         if hasattr(message, 'text') and message.text and any(char.isdigit() for char in message.text):
             code = ''.join(char for char in message.text if char.isdigit())
             if is_valid_ean13(code):
                 generate_shtrih_code(code)
                 time.sleep(1)
                 barcode_image = open('user_files/barcode.png', 'rb')
-                bot.send_photo(message.chat.id, barcode_image, caption=f'Ваше <b>штрих код</b> с цифрами <code>{message.text}</code>', parse_mode='html')
+                bot.send_photo(message.chat.id, barcode_image, caption=f'✅ Твой <b>штрих код</b> с цифрами <code>'
+                                                                       f'{message.text}</code>', parse_mode='html')
                 time.sleep(1)
                 barcode_image.close()
             else:
-                bot.send_message(message.chat.id, f'❌ Ваш набор цифр <i>не соответствует</i> <b>формату EAN-13</b>\n\n👉 Нужно ввести <b>13</b> цифр!',
+                bot.send_message(message.chat.id, f'❌ Твой набор цифр <i>не соответствует</i> <b>формату EAN-13</b>'
+                                                  f'\n\n👉 Нужно ввести <b>13</b> цифр!',
                                  parse_mode='html')
         else:
             bot.send_message(message.chat.id, '❌ <b>Неверный формат сообщения или отсутствует текст.</b>',
@@ -534,6 +542,21 @@ def process_shtrih_step(message):
 
     process_message(message)
 
+def process_qr_step(message):
+    if message.text:
+        data_for_qr = message.text
+        result = generate_qr_code(data_for_qr)
+
+        if result == 'success':
+            qrcode_image = open('user_files/qrcode.png', 'rb')
+            bot.send_photo(message.chat.id, qrcode_image, caption=f'✅ Твой <b>QR код</b> с информацией <code>'
+                                                                   f'{message.text}</code>', parse_mode='html')
+        else:
+            bot.send_message(message.chat.id, f'❌ <b>Произошла ошибка:</b> <i>{result}</i>',
+                             parse_mode='html')
+    else:
+        bot.send_message(message.chat.id, f'❌<b>Ваше сообщение не содержит текста.</b>',
+                         parse_mode='html')
 
 
 bot.polling(none_stop=True)

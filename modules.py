@@ -28,7 +28,8 @@ import random
 import pyAesCrypt
 import shutil
 import barcode
-from  barcode.writer import ImageWriter
+from barcode.writer import ImageWriter
+import qrcode   # Потом перейду на segno
 from config import Console_log, weather_link, temperature_link
 
 
@@ -486,3 +487,16 @@ def generate_shtrih_code(numbers):
 
         return 'except'
 
+def generate_qr_code(data):
+    try:
+        qr_img = qrcode.make(data)
+        time.sleep(1)
+        type(qr_img)
+        qr_img.save('user_files/qrcode.png')
+
+        if Console_log == True:
+            print(f'Сгенерировал QR с информацией: {data}')
+
+        return 'success'
+    except Exception as e:
+        return e

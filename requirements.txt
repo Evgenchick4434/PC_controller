@@ -10,3 +10,4 @@ beautifulsoup4
 Pillow
 pyAesCrypt
 "python-barcode[images]"
+"qrcode[pil]"
