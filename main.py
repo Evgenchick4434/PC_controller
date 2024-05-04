@@ -41,6 +41,7 @@ print(logo)
 
 @bot.message_handler(commands=['start'])
 def privet(message):
+    global hourglass_message, shufut_message, shufut
     user_id_telegram = message.from_user.id
     if user_id_telegram in config.whitelist:
 #        sti = open('static/yuhu.webm', 'rb')

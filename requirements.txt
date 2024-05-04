@@ -9,5 +9,5 @@ bs4
 beautifulsoup4
 Pillow
 pyAesCrypt
-"python-barcode[images]"
-"qrcode[pil]"
+# "python-barcode[images]" ОБЯЗАТЕЛЬНО К УСТАНОВКЕ
+# "qrcode[pil]" ОБЯЗАТЕЛЬНО К УСТАНОВКЕ

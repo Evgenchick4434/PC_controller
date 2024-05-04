@@ -32,6 +32,9 @@ from barcode.writer import ImageWriter
 import qrcode   # Потом перейду на segno
 from config import Console_log, weather_link, temperature_link
 
+headers = {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"
+}
 
 def get_date():
     locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
@@ -55,9 +58,8 @@ def get_date():
     return formatted_date
 
 
-unformatted_time = time.localtime()
-
 def get_current_time():
+    unformatted_time = time.localtime()
     current_time = time.strftime("%H:%M", unformatted_time)
 
     if Console_log == True:
@@ -129,7 +131,7 @@ def get_courses():
     url = 'https://coinmarketcap.com/currencies/bitcoin/'
     class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     BTC = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
@@ -137,7 +139,7 @@ def get_courses():
     url = 'https://coinmarketcap.com/currencies/ethereum/'
     class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     ETH = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
@@ -145,7 +147,7 @@ def get_courses():
     url = 'https://ru.investing.com/currencies/usd-rub'
     class_ = 'mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:mb-0.5 md:gap-6'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     USD = html.find(class_=class_).find(class_='text-5xl/9 font-bold text-[#232526] md:text-[42px] md:leading-[60px]').text
 
@@ -160,7 +162,7 @@ def get_currency_stats():
     url = 'https://ru.investing.com/currencies/usd-rub'
     class_ = 'mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:mb-0.5 md:gap-6'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     CURRENCIES = html.find(class_=class_).find(
         class_='flex items-center gap-2 text-base/6 font-bold md:text-xl/7 rtl:force-ltr text-negative-main').text
@@ -184,16 +186,16 @@ def get_crypto_stats():
     url = 'https://www.binance.com/ru/price/ethereum'
     class_ = 'css-1267ixm'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
-    CRYPTO = html.find(class_=class_).find(class_='css-4j2do9').text
+    CRYPTO = html.find(class_=class_).find(class_='css-12i542z').text
 
     if '-' in CRYPTO:
 
         crypto_review = f'📉 | На нынешний день рынок <i>криптовалют</i> <b>упал</b> на {CRYPTO[1:]}'
     else:
 
-        crypto_review = f'📈 | На нынешний день рынок <i>криптовалют</i> <b>вырос<b> на {CRYPTO}'
+        crypto_review = f'📈 | На нынешний день рынок <i>криптовалют</i> <b>вырос</b> на {CRYPTO}'
 
     return crypto_review
 
@@ -202,35 +204,35 @@ def get_extra_currencies():
     url = 'https://coinmarketcap.com/currencies/bitcoin/'
     class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     BTC = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
     url = 'https://coinmarketcap.com/currencies/ethereum/'
     class_ = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     ETH = html.find(class_=class_).find(class_='sc-f70bb44c-0 jxpCgO base-text').text
 
     url = 'https://ru.investing.com/currencies/usd-rub'
     class_ = 'mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:mb-0.5 md:gap-6'
 
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     USD_element = html.find(class_=class_)
     USD = USD_element.find(
         class_='text-5xl/9 font-bold text-[#232526] md:text-[42px] md:leading-[60px]').text if USD_element else "Не удалось найти курс Доллара"
 
     url = 'https://ru.investing.com/currencies/try-rub'
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     TRY_element = html.find(class_=class_)
     TRY = TRY_element.find(
         class_='text-5xl/9 font-bold text-[#232526] md:text-[42px] md:leading-[60px]').text if TRY_element else "Не удалось найти курс Турецкой лиры"
 
     url = 'https://ru.investing.com/currencies/eur-rub'
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     EUR_element = html.find(class_=class_)
     EUR = EUR_element.find(
@@ -238,20 +240,20 @@ def get_extra_currencies():
 
     url_trx = 'https://coinmarketcap.com/currencies/tron/'
     class_trx = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
-    r_trx = requests.get(url_trx)
+    r_trx = requests.get(url_trx, headers)
     html_trx = BS(r_trx.text, 'html.parser')
     trx_element = html_trx.find(class_=class_trx)
     TRX = trx_element.find(class_='sc-f70bb44c-0 jxpCgO base-text').text if trx_element else "Не удалось найти курс TRX"
 
     url_ton = 'https://coinmarketcap.com/currencies/toncoin/'
     class_ton = 'sc-f70bb44c-0 flfGQp flexStart alignBaseline'
-    r_ton = requests.get(url_ton)
+    r_ton = requests.get(url_ton, headers)
     html_ton = BS(r_ton.text, 'html.parser')
     ton_element = html_ton.find(class_=class_ton)
     TON = ton_element.find(class_='sc-f70bb44c-0 jxpCgO base-text').text if ton_element else "Не удалось найти курс TON"
 
     url = 'https://ru.investing.com/currencies/pln-rub'
-    r = requests.get(url)
+    r = requests.get(url, headers)
     html = BS(r.text, 'html.parser')
     PLN_element = html.find(class_=class_)
     PLN = PLN_element.find(
